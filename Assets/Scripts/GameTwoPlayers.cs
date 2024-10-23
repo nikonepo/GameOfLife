@@ -1,6 +1,6 @@
-using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Random = System.Random;
 
@@ -17,14 +17,14 @@ public class GameTwoPlayers : MonoBehaviour
 
     public int Speed = 25;
     
-    private PauseMenu pauseMenu;
+    private PauseMenu2 pauseMenu;
     private EndMenu endMenu;
 
     private GameSession gameSession;
     
     private void Start()
     {
-        pauseMenu = FindFirstObjectByType<PauseMenu>();
+        pauseMenu = FindFirstObjectByType<PauseMenu2>();
         endMenu = FindFirstObjectByType<EndMenu>();
         UpdateSpeedText();
 
@@ -32,8 +32,39 @@ public class GameTwoPlayers : MonoBehaviour
         gameSession.InitializeBoard();
     }
 
+    public void UpdateGliderPattern()
+    {
+        gameSession.pattern = Pattern.GLIDER;
+    }
+
+    public void UpdateNonePattern()
+    {
+        gameSession.pattern = Pattern.NONE;
+    }
+
+    public void UpdateTubPattern()
+    {
+        gameSession.pattern = Pattern.TUB;
+    }
+
+    public void UpdateShipPattern()
+    {
+        gameSession.pattern = Pattern.SHIP;
+    }
+
+    public void UpdateBlinkerPattern()
+    {
+        gameSession.pattern = Pattern.BLINKER;
+    }
+
     private void Update()
     {
+        
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+        
         if (pauseMenu.IsPaused || gameSession.isEnd)
         {
             return;
@@ -240,7 +271,9 @@ public class GameTwoPlayers : MonoBehaviour
         private readonly Random random = new();
 
         public float timer;
-
+        
+        public Pattern pattern = Pattern.NONE;
+        
         private void UpdateNeighbours()
         {
             for (var x = 0; x < WIDTH; ++x)
@@ -402,12 +435,70 @@ public class GameTwoPlayers : MonoBehaviour
             {
                 if (IsOnePlayer)
                 {
-                    board[x, y].SetState(TwoCell.State.PLAYER_1);
+                    ClickPattern(pattern, TwoCell.State.PLAYER_1, x, y);
+                    // board[x, y].SetState(TwoCell.State.PLAYER_1);
                 }
                 else
                 {
-                    board[x, y].SetState(TwoCell.State.PLAYER_2);
+                    ClickPattern(pattern, TwoCell.State.PLAYER_2, x, y);
+                    // board[x, y].SetState(TwoCell.State.PLAYER_2);
                 }
+            }
+        }
+
+        private void ClickPattern(Pattern pattern, TwoCell.State state, int x, int y)
+        {
+            switch (this.pattern)
+            {
+                case Pattern.NONE:
+                    board[x, y].SetState(state);
+                    break;
+                
+                case Pattern.GLIDER:
+                    board[x, y + 1].SetState(state);
+                    board[x + 1, y].SetState(state);
+                    board[x - 1, y - 1].SetState(state);
+                    board[x, y - 1].SetState(state);
+                    board[x + 1, y - 1].SetState(state);
+                    break;
+                
+                //  .
+                // . .
+                //  .
+                case Pattern.TUB:
+                    board[x + 1, y].SetState(state);
+                    board[x - 1, y].SetState(state);
+                    board[x, y + 1].SetState(state);
+                    board[x, y - 1].SetState(state);
+                    break;
+                
+                //    .
+                //  .   .
+                // .
+                // .    .
+                // .....
+                case Pattern.SHIP:
+                    board[x - 2, y - 2].SetState(state);
+                    board[x - 1, y - 2].SetState(state);
+                    board[x, y - 2].SetState(state);
+                    board[x + 1, y - 2].SetState(state);
+                    board[x + 2, y - 2].SetState(state);
+                    
+                    board[x - 2, y - 1].SetState(state);
+                    board[x + 3, y - 1].SetState(state);
+                    
+                    board[x - 2, y].SetState(state);
+                    
+                    board[x - 1, y + 1].SetState(state);
+                    board[x + 3, y + 1].SetState(state);
+                    board[x + 1, y + 2].SetState(state);
+                    break;
+                    
+                case Pattern.BLINKER:
+                    board[x - 1, y].SetState(state);
+                    board[x, y].SetState(state);
+                    board[x + 1, y].SetState(state);
+                    break;
             }
         }
 
@@ -431,5 +522,10 @@ public class GameTwoPlayers : MonoBehaviour
             PlayerOneScore = 0;
             PlayerTwoScore = 0;
         }
+    }
+
+    public enum Pattern
+    {
+        GLIDER, TUB, SHIP, BLINKER, NONE
     }
 }

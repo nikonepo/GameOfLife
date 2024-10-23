@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameOfLife.unity
     guid: d87121b9d26c882418aa519ffe011b77
+  - enabled: 1
+    path: Assets/Scenes/GameOfLife2Players.unity
+    guid: 6c077c6e61893ff469d205eb09d18e64
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
